@@ -1,7 +1,6 @@
 package pg
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -10,7 +9,7 @@ import (
 )
 
 type PG struct {
-	SqlDB *sql.DB
+	SqlDB *sqlx.DB
 }
 
 func (vi *PG) WriteData(...models.RawData) error {

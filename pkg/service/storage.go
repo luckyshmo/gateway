@@ -9,7 +9,11 @@ type StorageService struct {
 	repo repository.Storage
 }
 
-func (ss *StorageService) WriteData(...models.RawData) error {
+func (ss *StorageService) WriteData(rawData ...models.RawData) error {
+	err := ss.repo.WriteData(rawData...)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

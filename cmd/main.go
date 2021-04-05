@@ -1,18 +1,17 @@
 package main
 
 import (
-	"log"
-
 	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/pkg/repository"
 	"github.com/luckyshmo/gateway/pkg/repository/pg"
 	"github.com/luckyshmo/gateway/pkg/service"
+	"github.com/luckyshmo/gateway/pkg/source"
 	"github.com/sirupsen/logrus"
 )
 
 func main() {
 	if err := run(); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 }
 
@@ -35,7 +34,15 @@ func run() error {
 	}
 
 	repo := repository.NewRepository(p1)
-	services := service.NewService(repos)
+	services := service.NewService(repo)
+	dataSource := source.NewDataSource(services)
+
+	err = dataSource.Init()
+	if err != nil {
+		return err
+	}
+
+	return nil
 	// handlers := handler.NewHandler(services)
 
 	// confPG := models.Config{

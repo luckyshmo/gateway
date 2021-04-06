@@ -1,11 +1,19 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"path/filepath"
+	"syscall"
+
 	"github.com/luckyshmo/gateway/config"
+	"github.com/luckyshmo/gateway/models"
 	"github.com/luckyshmo/gateway/pkg/repository"
+	"github.com/luckyshmo/gateway/pkg/repository/kafkaQueue"
 	"github.com/luckyshmo/gateway/pkg/repository/pg"
 	"github.com/luckyshmo/gateway/pkg/service"
 	"github.com/luckyshmo/gateway/pkg/source"
+	"github.com/luckyshmo/gateway/pkg/source/fileSource"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,45 +27,36 @@ func run() error {
 	// config
 	cfg := config.Get()
 
-	// kf := kafkaQueue.NewKafkaStore("", "")
-	cfg1 := pg.Config{
-		Host:     cfg.PgHOST,
-		Port:     cfg.PgPORT,
-		Username: cfg.PgUserName,
-		DBName:   cfg.PgDBName,
-		SSLMode:  cfg.PgSSLMode,
-		Password: cfg.PgPAS,
-	}
-	p1, err := pg.NewPostgresDB(cfg1)
-	if err != nil {
-		logrus.Fatal("asdasd")
-	}
-
-	repo := repository.NewRepository(p1)
-	services := service.NewService(repo)
-	dataSource := source.NewDataSource(services)
-
-	err = dataSource.Init()
+	//Storage init
+	_ = kafkaQueue.NewKafkaStore("", "")
+	pgDB, err := pg.NewPostgresDB(cfg)
 	if err != nil {
 		return err
 	}
 
-	return nil
-	// handlers := handler.NewHandler(services)
+	//Source init
+	k, _ := filepath.Abs("../testData")
+	fileDataSource, err := fileSource.NewFileSource(k)
+	if err != nil {
+		return err
+	}
 
-	// confPG := models.Config{
-	// 	Host:     "localhost",
-	// 	Port:     "5432",
-	// 	Username: "postgres",
-	// 	Password: "example",
-	// 	DBName:   "postgres",
-	// 	SSLMode:  "disable",
-	// }
-	// var lol = d.DataBase{}
-	// lol.Init(confPG)
-	// err := f.ReadFile("/home/mihail/go/src/gateway/fileReader/test")
-	// if err != nil {
-	// 	return err
-	// }
-	// return nil
+	repo := repository.NewRepository(pgDB)
+	dataSource := source.NewDataSource(fileDataSource)
+	services := service.NewService(repo, dataSource)
+
+	chRaw := make(chan models.RawData)
+	chData := make(chan models.Data)
+	go services.Reader.ReadData(chRaw)
+	go services.Process.ProcessData(chRaw, chData) //? no need to create extrenal and interface method //todo middleware
+	go services.Writer.WriteData(chData)
+
+	logrus.Print("App Started")
+
+	quit := make(chan os.Signal, 1)
+	//if app get SIGTERM it will exit
+	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
+	<-quit
+
+	return nil
 }

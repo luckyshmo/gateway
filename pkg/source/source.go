@@ -1,15 +1,19 @@
 package source
 
-import "github.com/luckyshmo/gateway/pkg/service"
+import (
+	"github.com/luckyshmo/gateway/models"
+)
 
-type DataSource struct {
-	services *service.Service
+type DataSource interface {
+	ReadData(ch chan<- models.RawData) error
 }
 
-func NewDataSource(services *service.Service) *DataSource {
-	return &DataSource{services: services}
+type DataSourceObj struct {
+	DataSource
 }
 
-func (ds *DataSource) Init() error {
-	return nil
+func NewDataSource(ds DataSource) *DataSourceObj {
+	return &DataSourceObj{
+		DataSource: ds,
+	}
 }

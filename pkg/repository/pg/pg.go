@@ -5,18 +5,21 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" //driver
+	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/models"
+	"github.com/sirupsen/logrus"
 )
 
 type PG struct {
 	SqlDB *sqlx.DB
 }
 
-func (vi *PG) WriteData(...models.RawData) error {
+func (vi *PG) WriteData(...models.Data) error {
+	logrus.Info("write to pg")
 	return nil
 }
 
-type Config struct {
+type ConfigPG struct {
 	Host     string
 	Port     string
 	Username string
@@ -25,9 +28,19 @@ type Config struct {
 	SSLMode  string
 }
 
-func NewPostgresDB(cfg Config) (*PG, error) {
+func NewPostgresDB(cfgGlobal *config.Config) (*PG, error) {
+
+	cfgPG := ConfigPG{
+		Host:     cfgGlobal.PgHOST,
+		Port:     cfgGlobal.PgPORT,
+		Username: cfgGlobal.PgUserName,
+		DBName:   cfgGlobal.PgDBName,
+		SSLMode:  cfgGlobal.PgSSLMode,
+		Password: cfgGlobal.PgPAS,
+	}
+
 	db, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-		cfg.Host, cfg.Port, cfg.Username, cfg.DBName, cfg.Password, cfg.SSLMode))
+		cfgPG.Host, cfgPG.Port, cfgPG.Username, cfgPG.DBName, cfgPG.Password, cfgPG.SSLMode))
 	if err != nil {
 		return nil, err
 	}

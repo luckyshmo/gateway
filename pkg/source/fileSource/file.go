@@ -32,7 +32,7 @@ func NewFileSource(path string) (*FileSource, error) {
 func (fs *FileSource) ReadData(ch chan<- models.RawData) error {
 
 	for {
-		line, err := fs.reader.ReadString('}')
+		line, err := fs.reader.ReadBytes('}')
 		if err == io.EOF {
 			break
 		} else if err != nil {

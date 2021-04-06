@@ -14,6 +14,7 @@ import (
 	"github.com/luckyshmo/gateway/pkg/service"
 	"github.com/luckyshmo/gateway/pkg/source"
 	"github.com/luckyshmo/gateway/pkg/source/fileSource"
+	"github.com/luckyshmo/gateway/pkg/source/socket"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,28 +29,40 @@ func run() error {
 	cfg := config.Get()
 
 	//Storage init
-	_ = kafkaQueue.NewKafkaStore("", "")
+	kf := kafkaQueue.NewKafkaStore("", "") //example write to Kafka
 	pgDB, err := pg.NewPostgresDB(cfg)
 	if err != nil {
 		return err
 	}
 
 	//Source init
-	k, _ := filepath.Abs("../testData")
-	fileDataSource, err := fileSource.NewFileSource(k)
+	path, err := filepath.Abs("../testData")
+	if err != nil {
+		return err
+	}
+	_, err = fileSource.NewFileSource(path) //example. Read from file
 	if err != nil {
 		return err
 	}
 
-	repo := repository.NewRepository(pgDB)
-	dataSource := source.NewDataSource(fileDataSource)
-	services := service.NewService(repo, dataSource)
+	sock := socket.NewSocketSource()
 
+	//Init interfaces
+	validRepo := repository.NewRepository(pgDB)
+	dataSource := source.NewDataSource(sock)
+	invalidRepo := repository.NewRepository(kf)
+	services := service.NewService(validRepo, invalidRepo, dataSource)
+
+	//Run program
 	chRaw := make(chan models.RawData)
-	chData := make(chan models.Data)
+	chValid := make(chan models.Data)
+	chInvalid := make(chan models.RawData)
 	go services.Reader.ReadData(chRaw)
-	go services.Process.ProcessData(chRaw, chData) //? no need to create extrenal and interface method //todo middleware
-	go services.Writer.WriteData(chData)
+	go services.Process.SortData(chRaw, chValid, chInvalid) //? no need to create extrenal and interface method //todo middleware
+	go services.Writer.WriteData(chValid)
+	go services.Writer.WriteRawData(chInvalid)
+
+	// go services.Writer.WriteData(chInvalid) //TODO
 
 	logrus.Print("App Started")
 

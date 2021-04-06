@@ -4,6 +4,7 @@ import "github.com/luckyshmo/gateway/models"
 
 type Storage interface {
 	WriteData(...models.Data) error
+	WriteRawData(...models.RawData) error
 }
 
 type Repository struct {

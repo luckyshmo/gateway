@@ -8,6 +8,7 @@ import (
 
 type Writer interface {
 	WriteData(ch <-chan models.Data) error
+	WriteRawData(ch <-chan models.RawData) error
 }
 
 type Reader interface {
@@ -15,7 +16,7 @@ type Reader interface {
 }
 
 type Process interface {
-	ProcessData(chRaw <-chan models.RawData, chData chan<- models.Data) error
+	SortData(chRaw <-chan models.RawData, chValid chan<- models.Data, chInValid chan<- models.RawData) error
 }
 type Service struct {
 	Writer
@@ -23,10 +24,10 @@ type Service struct {
 	Process
 }
 
-func NewService(repos *repository.Repository, dataSource *source.DataSourceObj) *Service {
+func NewService(valid *repository.Repository, invalid *repository.Repository, dataSource *source.DataSourceObj) *Service {
 	return &Service{
-		Writer:  NewStorageService(repos.Storage),
-		Reader:  NewSourceService(dataSource.DataSource),
+		Writer:  NewStorageService(valid.Storage, invalid),
+		Reader:  NewDataSourceService(dataSource.DataSource),
 		Process: NewProcessService(),
 	}
 }

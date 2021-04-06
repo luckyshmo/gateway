@@ -1,43 +1,54 @@
 package socket
 
 import (
-	"flag"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/luckyshmo/gateway/models"
+	"github.com/sirupsen/logrus"
 )
 
-var addr = flag.String("addr", "localhost:8080", "http service address")
+type SocketSource struct {
+	*websocket.Conn
+}
 
-func Socket() {
-
+func (ss *SocketSource) ReadData(ch chan<- models.RawData) error { //data 41 + data 51 + same devEui
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
-	u := url.URL{Scheme: "ws", Host: *addr, Path: "/echo"}
-	log.Printf("connecting to %s", u.String())
+	authStr := `{
+		"cmd": "auth_req",
+	 	"login": "root",
+	 	"password": "123"
+	  }`
 
-	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
-	if err != nil {
-		log.Fatal("dial:", err)
-	}
-	defer c.Close()
+	ss.WriteMessage(websocket.TextMessage, []byte(authStr))
+
+	defer ss.Close()
 
 	done := make(chan struct{})
 
 	go func() {
 		defer close(done)
 		for {
-			_, message, err := c.ReadMessage()
+			_, message, err := ss.ReadMessage()
 			if err != nil {
-				log.Println("read:", err)
+				// log.Println("read:", err)
 				return
 			}
-			log.Printf("recv: %s", message)
+			// log.Printf("recv: %s", message)
+			ch <- models.RawData{
+				Id:   uuid.New(),
+				Time: time.Now().UTC(),
+				Data: message,
+			}
+
 		}
 	}()
 
@@ -47,28 +58,43 @@ func Socket() {
 	for {
 		select {
 		case <-done:
-			return
-		case t := <-ticker.C:
-			err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
-			if err != nil {
-				log.Println("write:", err)
-				return
-			}
+			return nil
+		// case t := <-ticker.C:
+		// 	err := ss.WriteMessage(websocket.TextMessage, []byte(t.String()))
+		// 	if err != nil {
+		// 		log.Println("write:", err)
+		// 		return
+		// 	}
 		case <-interrupt:
 			log.Println("interrupt")
 
 			// Cleanly close the connection by sending a close message and then
 			// waiting (with timeout) for the server to close the connection.
-			err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			err := ss.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
 				log.Println("write close:", err)
-				return
+				return err
 			}
 			select {
 			case <-done:
 			case <-time.After(time.Second):
 			}
-			return
+			return nil
 		}
 	}
+}
+
+func NewSocketSource() *SocketSource {
+
+	// send(new Gson().toJson(AuthWS("auth_req", "root", "123")))
+	// new URI("ws://89.109.190.198:8003")
+
+	u := url.URL{Scheme: "ws", Host: "89.109.190.198:8003"}
+	logrus.Info(fmt.Sprintf("connecting to %s", u.String()))
+
+	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
+	if err != nil {
+		logrus.Warn("dial:", err)
+	}
+	return &SocketSource{c}
 }

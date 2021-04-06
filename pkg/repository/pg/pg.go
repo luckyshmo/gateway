@@ -19,6 +19,11 @@ func (vi *PG) WriteData(...models.Data) error {
 	return nil
 }
 
+func (vi *PG) WriteRawData(...models.RawData) error {
+	logrus.Info("write to pg RAW")
+	return nil
+}
+
 type ConfigPG struct {
 	Host     string
 	Port     string

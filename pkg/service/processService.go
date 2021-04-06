@@ -26,7 +26,7 @@ func (ps *ProcessService) SortData(chRaw <-chan models.RawData, chValid chan<- m
 			var p Uid
 
 			json.Unmarshal(rawData.Data, &p)
-			if p.DevEui != "" && len(p.Data) > 0 { //valid data
+			if /*p.DevEui != "" &&*/ len(p.Data) > 0 { //valid data
 				chValid <- models.Data{
 					Id:           rawData.Id,
 					TimeCreated:  rawData.Time,

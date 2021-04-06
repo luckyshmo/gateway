@@ -14,7 +14,6 @@ import (
 	"github.com/luckyshmo/gateway/pkg/service"
 	"github.com/luckyshmo/gateway/pkg/source"
 	"github.com/luckyshmo/gateway/pkg/source/fileSource"
-	"github.com/luckyshmo/gateway/pkg/source/socket"
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,16 +39,16 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	_, err = fileSource.NewFileSource(path) //example. Read from file
+	f, err := fileSource.NewFileSource(path) //example. Read from file
 	if err != nil {
 		return err
 	}
 
-	sock := socket.NewSocketSource()
+	// sock := socket.NewSocketSource()
 
 	//Init interfaces
 	validRepo := repository.NewRepository(pgDB)
-	dataSource := source.NewDataSource(sock)
+	dataSource := source.NewDataSource(f)
 	invalidRepo := repository.NewRepository(kf)
 	services := service.NewService(validRepo, invalidRepo, dataSource)
 

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/luckyshmo/gateway/models"
-	"github.com/sirupsen/logrus"
 
 	"github.com/google/uuid"
 )
@@ -39,7 +38,6 @@ func (fs *FileSource) ReadData(ch chan<- models.RawData) error {
 			fmt.Printf("error reading file %s", err)
 			break
 		}
-		logrus.Info("Line readed")
 		ch <- models.RawData{
 			Id:   uuid.New(),
 			Time: time.Now(),

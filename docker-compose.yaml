@@ -2,15 +2,37 @@
 version: '3.1'
 
 services:
-  db:
-    image: postgres
+  pg:
+    image: postgres:latest
     restart: always
     environment:
       POSTGRES_PASSWORD: example
     ports:
       - 5432:5432
-  db1:
-    image: victoriametrics/victoria-metrics
-    restart: always
+  influxdb:
+    image: quay.io/influxdb/influxdb:v2.0.3
+    # volumes:
+    #   # Mount for influxdb data directory and configuration
+    #   - influxdbv2:/.influxdbv2
     ports:
-      - 8428:8428
+      - "8086:8086"
+# Use the influx cli to set up an influxdb instance. 
+  influxdb_cli:
+    links:
+      - influxdb
+    image: quay.io/influxdb/influxdb:v2.0.3
+# Use these same configurations parameters in your telegraf configuration, mytelegraf.conf.
+    entrypoint: influx setup --bucket mybucket -t mytoken -o myorg --username=myusername --password=passwordpasswordpassword --host=http://influxdb:8086 -f
+      # Wait for the influxd service in the influxdb container has fully bootstrapped before trying to setup an influxdb instance with the influxdb_cli service. 
+    restart: on-failure:10
+    depends_on:
+      - influxdb
+  telegraf:
+    image: telegraf
+    links:
+      - influxdb
+    volumes:
+      # Mount for telegraf config
+      - ./telegraf/mytelegraf.conf:/etc/telegraf/telegraf.conf
+    depends_on:
+      - influxdb_cli  

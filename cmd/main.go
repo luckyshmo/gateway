@@ -9,6 +9,7 @@ import (
 	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/models"
 	"github.com/luckyshmo/gateway/pkg/repository"
+	"github.com/luckyshmo/gateway/pkg/repository/influx"
 	"github.com/luckyshmo/gateway/pkg/repository/kafkaQueue"
 	"github.com/luckyshmo/gateway/pkg/repository/pg"
 	"github.com/luckyshmo/gateway/pkg/service"
@@ -24,6 +25,8 @@ func main() {
 }
 
 func run() error {
+	influx.Influx()
+	return nil
 	// config
 	cfg := config.Get()
 

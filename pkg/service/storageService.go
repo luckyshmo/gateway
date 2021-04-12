@@ -19,7 +19,7 @@ func NewStorageService(valid repository.Storage, invalid repository.Storage) *St
 	}
 }
 
-func (ss StorageService) WriteData(ch <-chan models.Data) error {
+func (ss StorageService) WriteData(ch <-chan models.ValidPackage) error {
 	for {
 		select {
 		case data := <-ch:

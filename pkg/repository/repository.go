@@ -3,7 +3,7 @@ package repository
 import "github.com/luckyshmo/gateway/models"
 
 type Storage interface {
-	WriteData(...models.Data) error
+	WriteData(...models.ValidPackage) error
 	WriteRawData(...models.RawData) error
 }
 

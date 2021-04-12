@@ -10,7 +10,7 @@ type KafkaStore struct {
 	writer *kafka.Writer
 }
 
-func (ka *KafkaStore) WriteData(data ...models.Data) error {
+func (ka *KafkaStore) WriteData(data ...models.ValidPackage) error {
 	logrus.Info("write to kafka")
 	return nil
 	// for i := 0; i < len(data); i++ {

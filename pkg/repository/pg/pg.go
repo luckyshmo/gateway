@@ -14,7 +14,7 @@ type PG struct {
 	SqlDB *sqlx.DB
 }
 
-func (vi *PG) WriteData(...models.Data) error {
+func (vi *PG) WriteData(...models.ValidPackage) error {
 	logrus.Info("write to pg")
 	return nil
 }
@@ -24,7 +24,7 @@ func (vi *PG) WriteRawData(...models.RawData) error {
 	return nil
 }
 
-type ConfigPG struct {
+type ConfigPG struct { //TODO remove?
 	Host     string
 	Port     string
 	Username string

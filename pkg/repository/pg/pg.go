@@ -3,10 +3,12 @@ package pg
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" //driver
 	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/models"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -14,93 +16,76 @@ type PG struct {
 	SqlDB *sqlx.DB
 }
 
-func (vi *PG) WriteData(...models.ValidPackage) error {
-	logrus.Info("write to pg")
+var (
+	rawTable   = "raw_data"
+	validTable = "valid_data"
+)
+
+func (pg *PG) WriteData(vp ...models.ValidPackage) error {
+	logrus.Info(fmt.Sprintf("Writing %d valid packages to pg", len(vp)))
+	err := pg.SqlDB.Ping()
+	if err != nil {
+		return errors.Wrap(err, "no DB connections")
+	}
+	for i, v := range vp {
+		var id uuid.UUID
+		query := fmt.Sprintf("INSERT INTO %s (id, dev_eui, time_cr, time_p, data_f, raw_data) values ($1, $2, $3, $4, $5, $6) RETURNING id", validTable)
+
+		row := pg.SqlDB.QueryRow(query, v.Id, v.DevEui, v.TimeCreated, v.TimePackage, v.Data, v.RawData)
+		if err := row.Scan(&id); err != nil {
+			logrus.Warn("No resp from DB")
+		}
+
+		row.Err()
+		if err := row.Err(); err != nil {
+			return errors.Wrap(err, fmt.Sprintf("error executing query number %d", i))
+		}
+	}
+
 	return nil
 }
 
-func (vi *PG) WriteRawData(...models.RawData) error {
-	logrus.Info("write to pg RAW")
+func (pg *PG) WriteRawData(rd ...models.RawData) error {
+	err := pg.SqlDB.Ping()
+	if err != nil {
+		return errors.Wrap(err, "no DB connections")
+	}
+	logrus.Info(fmt.Sprintf("Writing %d invalid packages to pg", len(rd)))
+	for i, r := range rd {
+		var id uuid.UUID
+		query := fmt.Sprintf("INSERT INTO %s (id, time_cr, data_r) values ($1, $2, $3) RETURNING id", rawTable)
+
+		row := pg.SqlDB.QueryRow(query, r.Id, r.Time, r.Data)
+		if err := row.Scan(&id); err != nil {
+			logrus.Warn("No resp from DB")
+		}
+		row.Err()
+		if err := row.Err(); err != nil {
+			return errors.Wrap(err, fmt.Sprintf("error executing query number %d", i))
+		}
+	}
+
 	return nil
 }
-
-// type ConfigPG struct { //TODO remove?
-// 	Host     string
-// 	Port     string
-// 	Username string
-// 	Password string
-// 	DBName   string
-// 	SSLMode  string
-// }
 
 func NewPostgresDB(cfg *config.Config) (*PG, error) {
 
 	db, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
 		cfg.PgHOST, cfg.PgPORT, cfg.PgUserName, cfg.PgDBName, cfg.PgPAS, cfg.PgSSLMode))
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "err open SQLx")
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "no DB connections")
 	}
 
-	// err = migrations.RunPgMigrations()
-	// if err != nil {
-	// 	return nil, err
-	// }
+	if err = RunPgMigrations(cfg); err != nil {
+		return nil, errors.Wrap(err, "migrations failed")
+	}
 
 	return &PG{
 		SqlDB: db,
 	}, nil
 }
-
-// func (pg *PG) GetSqlDB() *sql.DB {
-// 	return pg.SqlDB
-// }
-
-// //Init is custom init PG func
-// func (pg *PG) Init(conf models.Config) error {
-// 	connStr := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-// 		conf.Host, conf.Port, conf.Username, conf.DBName, conf.Password, conf.SSLMode)
-
-// 	db, err := sql.Open("postgres", connStr)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	pg.SqlDB = db
-
-// 	const query = `
-// 		CREATE TABLE IF NOT EXISTS rawdata (
-// 		  id SERIAL PRIMARY KEY,
-// 		  uuid TEXT,
-// 		  time TEXT,
-// 		  data TEXT
-// 	)`
-
-// 	_, err = pg.SqlDB.Exec(query)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	// pg.SqlDB.Close()
-// 	return nil
-// }
-
-// func (pg PG) GetInsertQuery(rawData []models.RawData) string {
-// 	query := fmt.Sprintf("INSERT INTO " + "rawdata" + " (uuid, time, data) values \n")
-
-// 	// INSERT INTO products (product_no, name, price) VALUES
-// 	// (1, 'Cheese', 9.99),
-// 	// (2, 'Bread', 1.99),
-// 	// (3, 'Milk', 2.99);
-
-// 	for _, raw := range rawData {
-// 		if raw.Data != "" {
-// 			query += fmt.Sprintf("('%s', '%s', '%s'), \n", raw.Id, raw.Time, raw.Data)
-// 		}
-// 	}
-// 	query = strings.TrimSpace(query)
-// 	query = query[:len(query)-1] + ";"
-// 	return query
-// }

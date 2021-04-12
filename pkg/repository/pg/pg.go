@@ -24,28 +24,19 @@ func (vi *PG) WriteRawData(...models.RawData) error {
 	return nil
 }
 
-type ConfigPG struct { //TODO remove?
-	Host     string
-	Port     string
-	Username string
-	Password string
-	DBName   string
-	SSLMode  string
-}
+// type ConfigPG struct { //TODO remove?
+// 	Host     string
+// 	Port     string
+// 	Username string
+// 	Password string
+// 	DBName   string
+// 	SSLMode  string
+// }
 
-func NewPostgresDB(cfgGlobal *config.Config) (*PG, error) {
-
-	cfgPG := ConfigPG{
-		Host:     cfgGlobal.PgHOST,
-		Port:     cfgGlobal.PgPORT,
-		Username: cfgGlobal.PgUserName,
-		DBName:   cfgGlobal.PgDBName,
-		SSLMode:  cfgGlobal.PgSSLMode,
-		Password: cfgGlobal.PgPAS,
-	}
+func NewPostgresDB(cfg *config.Config) (*PG, error) {
 
 	db, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-		cfgPG.Host, cfgPG.Port, cfgPG.Username, cfgPG.DBName, cfgPG.Password, cfgPG.SSLMode))
+		cfg.PgHOST, cfg.PgPORT, cfg.PgUserName, cfg.PgDBName, cfg.PgPAS, cfg.PgSSLMode))
 	if err != nil {
 		return nil, err
 	}

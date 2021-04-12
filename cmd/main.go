@@ -5,6 +5,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
 
 	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/pkg/repository"
@@ -26,6 +27,20 @@ func main() {
 func run() error {
 	// config
 	cfg := config.Get()
+
+	// logger configuration
+	lvl, err := logrus.ParseLevel(cfg.LogLevel)
+	if err != nil {
+		logrus.SetLevel(logrus.DebugLevel) //using debug lvl if we can't parse
+		logrus.Warn("Using debug level logger")
+	} else {
+		logrus.SetLevel(lvl)
+	}
+	if cfg.Environment == "production" {
+		var JSONF = new(logrus.JSONFormatter)
+		JSONF.TimestampFormat = time.RFC3339
+		logrus.SetFormatter(JSONF)
+	}
 
 	//Storage init
 	_ = kafkaQueue.NewKafkaStore("", "") //example write to Kafka

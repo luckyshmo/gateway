@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
+	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/models"
 	"github.com/sirupsen/logrus"
 )
@@ -18,15 +19,15 @@ type SocketSource struct {
 	*websocket.Conn
 }
 
+var authStr = `{
+	"cmd": "auth_req",
+	 "login": "root",
+	 "password": "123"
+  }`
+
 func (ss *SocketSource) ReadData(ch chan<- models.RawData) error { //data 41 + data 51 + same devEui
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
-
-	authStr := `{
-		"cmd": "auth_req",
-	 	"login": "root",
-	 	"password": "123"
-	  }`
 
 	ss.WriteMessage(websocket.TextMessage, []byte(authStr))
 
@@ -84,12 +85,9 @@ func (ss *SocketSource) ReadData(ch chan<- models.RawData) error { //data 41 + d
 	}
 }
 
-func NewSocketSource() *SocketSource {
+func NewSocketSource(cfg *config.Config) *SocketSource {
 
-	// send(new Gson().toJson(AuthWS("auth_req", "root", "123")))
-	// new URI("ws://89.109.190.198:8003")
-
-	u := url.URL{Scheme: "ws", Host: "89.109.190.198:8003"}
+	u := url.URL{Scheme: "ws", Host: cfg.SocketHost}
 	logrus.Info(fmt.Sprintf("connecting to %s", u.String()))
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)

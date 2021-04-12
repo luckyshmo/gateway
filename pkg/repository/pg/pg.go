@@ -22,16 +22,17 @@ var (
 )
 
 func (pg *PG) WriteData(vp ...models.ValidPackage) error {
-	logrus.Info(fmt.Sprintf("Writing %d valid packages to pg", len(vp)))
-	err := pg.SqlDB.Ping()
-	if err != nil {
-		return errors.Wrap(err, "no DB connections")
-	}
 	for i, v := range vp {
 		var id uuid.UUID
-		query := fmt.Sprintf("INSERT INTO %s (id, dev_eui, time_cr, time_p, data_f, raw_data) values ($1, $2, $3, $4, $5, $6) RETURNING id", validTable)
+		query := fmt.Sprintf(`INSERT INTO %s (id, time_cr, raw_data, app_eui, ack, data_f, dr, fcnt, freq, gateway_id, port, rssi, snr, time_stamp_, type_, dev_eui) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id`, validTable)
 
-		row := pg.SqlDB.QueryRow(query, v.Id, v.DevEui, v.TimeCreated, v.TimePackage, v.Data, v.RawData)
+		logrus.Info(query)
+
+		row := pg.SqlDB.QueryRow(
+			query,
+			v.Id, v.TimeCreated, v.RawData,
+			v.AppEui, v.Ack, v.Data, v.Dr, v.Fcnt, v.Freq, v.GatewayId, v.Port, v.Rssi, v.Snr, v.TimeStamp, v.Type, v.DevEui,
+		)
 		if err := row.Scan(&id); err != nil {
 			logrus.Warn("No resp from DB")
 		}
@@ -46,11 +47,6 @@ func (pg *PG) WriteData(vp ...models.ValidPackage) error {
 }
 
 func (pg *PG) WriteRawData(rd ...models.RawData) error {
-	err := pg.SqlDB.Ping()
-	if err != nil {
-		return errors.Wrap(err, "no DB connections")
-	}
-	logrus.Info(fmt.Sprintf("Writing %d invalid packages to pg", len(rd)))
 	for i, r := range rd {
 		var id uuid.UUID
 		query := fmt.Sprintf("INSERT INTO %s (id, time_cr, data_r) values ($1, $2, $3) RETURNING id", rawTable)

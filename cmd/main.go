@@ -28,11 +28,18 @@ func run() error {
 	cfg := config.Get()
 
 	//Storage init
-	kf := kafkaQueue.NewKafkaStore("", "") //example write to Kafka
+	_ = kafkaQueue.NewKafkaStore("", "") //example write to Kafka
 	pgDB, err := pg.NewPostgresDB(cfg)
 	if err != nil {
 		return err
 	}
+	defer pgDB.SqlDB.Close()
+
+	pgDB1, err := pg.NewPostgresDB(cfg)
+	if err != nil {
+		return err
+	}
+	defer pgDB.SqlDB.Close()
 
 	//Source init
 	path, err := filepath.Abs("../testData")
@@ -47,7 +54,7 @@ func run() error {
 	sock := socket.NewSocketSource(cfg)
 
 	//Init interfaces
-	validRepo := repository.NewRepository(kf)
+	validRepo := repository.NewRepository(pgDB1)
 	invalidRepo := repository.NewRepository(pgDB)
 	dataSource := source.NewDataSource(sock)
 	services := service.NewService(validRepo, invalidRepo, dataSource)

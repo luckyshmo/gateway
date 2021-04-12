@@ -2,7 +2,6 @@ package socket
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"os"
 	"os/signal"
@@ -26,6 +25,7 @@ var authStr = `{
   }`
 
 func (ss *SocketSource) ReadData(ch chan<- models.RawData) error { //data 41 + data 51 + same devEui
+
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)
 
@@ -40,10 +40,8 @@ func (ss *SocketSource) ReadData(ch chan<- models.RawData) error { //data 41 + d
 		for {
 			_, message, err := ss.ReadMessage()
 			if err != nil {
-				// log.Println("read:", err)
 				return
 			}
-			// log.Printf("recv: %s", message)
 			ch <- models.RawData{
 				Id:   uuid.New(),
 				Time: time.Now().UTC(),
@@ -59,21 +57,16 @@ func (ss *SocketSource) ReadData(ch chan<- models.RawData) error { //data 41 + d
 	for {
 		select {
 		case <-done:
+			logrus.Info("DONE")
 			return nil
-		// case t := <-ticker.C:
-		// 	err := ss.WriteMessage(websocket.TextMessage, []byte(t.String()))
-		// 	if err != nil {
-		// 		log.Println("write:", err)
-		// 		return
-		// 	}
 		case <-interrupt:
-			log.Println("interrupt")
+			logrus.Info("Socket interrupt")
 
 			// Cleanly close the connection by sending a close message and then
 			// waiting (with timeout) for the server to close the connection.
 			err := ss.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
-				log.Println("write close:", err)
+				logrus.Info("write close:", err)
 				return err
 			}
 			select {

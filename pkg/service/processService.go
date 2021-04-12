@@ -43,7 +43,7 @@ func getValidPackage(rawData models.RawData, uData UData) models.ValidPackage {
 		Id:          rawData.Id,
 		DevEui:      uData.DevEui,
 		TimeCreated: rawData.Time,
-		TimePackage: time.Unix(uData.Ts, 0),
+		TimePackage: time.Unix(uData.Ts/1000, 0),
 		Data:        []byte(uData.Data),
 		RawData:     rawData.Data,
 	}

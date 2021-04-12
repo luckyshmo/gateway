@@ -1,10 +1,9 @@
 package config
 
 import (
-	"fmt"
-	"reflect"
 	"sync"
 
+	"github.com/luckyshmo/gateway/tools"
 	"github.com/sirupsen/logrus"
 
 	"github.com/kelseyhightower/envconfig"
@@ -40,18 +39,7 @@ func Get() *Config {
 		if err != nil {
 			logrus.Fatal(err)
 		}
-		validate(config)
+		tools.Validate(config)
 	})
 	return &config
-}
-
-func validate(cfg Config) { //TODO? logging isn't configure at this moment... probably return message or error?
-	refConf := reflect.ValueOf(cfg)
-	typeOfRefConf := refConf.Type()
-
-	for i := 0; i < refConf.NumField(); i++ {
-		if fmt.Sprint(refConf.Field(i).Interface()) == "" {
-			logrus.Warn(fmt.Sprintf("Config: %s value is empty!", typeOfRefConf.Field(i).Name))
-		}
-	}
 }

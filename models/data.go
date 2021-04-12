@@ -6,6 +6,18 @@ import (
 	"github.com/google/uuid"
 )
 
+type PackageType int
+
+const (
+	First PackageType = iota
+	Second
+	Over
+)
+
+func (pt PackageType) String() string {
+	return [...]string{"First", "Second", "Over"}[pt]
+}
+
 type RawData struct {
 	Id   uuid.UUID `json:"id" db:"id"`
 	Time time.Time `json:"time" db:"time_cr"`
@@ -18,8 +30,10 @@ type ValidPackage struct {
 
 	RawData []byte `json:"rawData" db:"raw_data"`
 
+	PackageType PackageType `json:"packageType" db:"package_type"`
+
 	AppEui    string  `json:"appEui" db:"app_eui"`
-	Ack       bool    `json:"ack" db:"ack"` //!TODO 1/0 to bool
+	Ack       bool    `json:"ack" db:"ack"` //TODO 1/0 to bool
 	Data      string  `json:"data" db:"data_f"`
 	Dr        string  `json:"dr" db:"dr"`
 	Fcnt      int     `json:"fcnt" db:"fcnt"`

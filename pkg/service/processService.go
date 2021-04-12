@@ -15,6 +15,21 @@ func NewProcessService() *ProcessService {
 	return &ProcessService{}
 }
 
+func fillPackage(vPack *models.ValidPackage, rawData models.RawData) {
+	vPack.Id = uuid.New()
+	vPack.TimeCreated = rawData.Time
+	vPack.RawData = rawData.Data
+
+	switch len(vPack.Data) {
+	case 102:
+		vPack.PackageType = models.First
+	case 82:
+		vPack.PackageType = models.Second
+	default:
+		vPack.PackageType = models.Over
+	}
+}
+
 func (ps *ProcessService) SortData(chRaw <-chan models.RawData, chValid chan<- models.ValidPackage, chInValid chan<- models.RawData) error {
 	for {
 		select {
@@ -24,12 +39,8 @@ func (ps *ProcessService) SortData(chRaw <-chan models.RawData, chValid chan<- m
 
 			if vPack.DevEui != "" && len(vPack.Data) > 0 { //valid data
 
-				vPack.Id = uuid.New()
-				vPack.TimeCreated = rawData.Time
-				vPack.RawData = rawData.Data
-
+				fillPackage(&vPack, rawData)
 				// tools.Validate(vPack)
-
 				chValid <- vPack
 			}
 

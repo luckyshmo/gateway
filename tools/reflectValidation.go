@@ -34,7 +34,7 @@ func isZero(v reflect.Value) bool {
 			z = z && isZero(v.Index(i))
 		}
 		return z
-		// case reflect.Struct:
+		// case reflect.Struct: //! panic on time.Time type
 		// 	z := true
 		// 	for i := 0; i < v.NumField(); i++ {
 		// 		z = z && isZero(v.Field(i))
@@ -44,4 +44,21 @@ func isZero(v reflect.Value) bool {
 	// Compare other types directly:
 	z := reflect.Zero(v.Type())
 	return v.Interface() == z.Interface()
+}
+
+//Get K is V for given tag (example: models.Config{} "db")
+func DbTagInfo(I interface{}, tag string) {
+
+	refVal := reflect.ValueOf(I)
+	typeOfRef := refVal.Type()
+
+	for i := 0; i < typeOfRef.NumField(); i++ {
+		refType := typeOfRef.Field(i)
+		v, ok := refType.Tag.Lookup(tag)
+		if !ok {
+			logrus.Warn(fmt.Sprintf("%s value of %s no DB tag", typeOfRef.Field(i).Name, typeOfRef.Name()))
+			continue
+		}
+		logrus.Info(fmt.Sprintf("Field `%s` is `%s`", typeOfRef.Field(i).Name, v))
+	}
 }

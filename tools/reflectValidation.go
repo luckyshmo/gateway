@@ -7,7 +7,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Validate(I interface{}) {
+func Validate(I interface{}) { //TODO shouldn't use logger
+	defer func() {
+		if r := recover(); r != nil {
+			logrus.Error("Probably reflect private field")
+		}
+	}()
 	refVal := reflect.ValueOf(I)
 	typeOfRef := refVal.Type()
 
@@ -29,12 +34,12 @@ func isZero(v reflect.Value) bool {
 			z = z && isZero(v.Index(i))
 		}
 		return z
-	case reflect.Struct:
-		z := true
-		for i := 0; i < v.NumField(); i++ {
-			z = z && isZero(v.Field(i))
-		}
-		return z
+		// case reflect.Struct:
+		// 	z := true
+		// 	for i := 0; i < v.NumField(); i++ {
+		// 		z = z && isZero(v.Field(i))
+		// 	}
+		// 	return z
 	}
 	// Compare other types directly:
 	z := reflect.Zero(v.Type())

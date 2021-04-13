@@ -82,7 +82,6 @@ func processChunk(chunk []byte, linesPool *sync.Pool, stringPool *sync.Pool) {
 
 	var wg2 sync.WaitGroup
 
-	// logs := stringPool.Get().(string)
 	logs := string(chunk)
 
 	linesPool.Put(&chunk)
@@ -103,7 +102,7 @@ func processChunk(chunk []byte, linesPool *sync.Pool, stringPool *sync.Pool) {
 
 		wg2.Add(1)
 		go func(s int, e int) {
-			defer wg2.Done() //to avaoid deadlocks
+			defer wg2.Done()
 			for i := s; i < e; i++ {
 				text := logsSlice[i]
 				if len(text) == 0 {

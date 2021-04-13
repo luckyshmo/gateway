@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func Validate(I interface{}) { //TODO shouldn't use logger
+func PrintEmptyStructFields(I interface{}) { //TODO shouldn't use logger
 	defer func() {
 		if r := recover(); r != nil {
 			logrus.Error("Probably reflect private field")
@@ -34,7 +34,7 @@ func isZero(v reflect.Value) bool {
 			z = z && isZero(v.Index(i))
 		}
 		return z
-		// case reflect.Struct: //! panic on time.Time type
+		// case reflect.Struct: //! panic on time.Time type etc
 		// 	z := true
 		// 	for i := 0; i < v.NumField(); i++ {
 		// 		z = z && isZero(v.Field(i))

@@ -24,7 +24,7 @@ var authStr = `{
 	 "password": "123"
   }`
 
-func (ss *SocketSource) ReadData(ch chan<- models.RawData) error { //data 41 + data 51 + same devEui
+func (ss *SocketSource) ReadData(ch chan<- models.RawData) error {
 
 	interrupt := make(chan os.Signal, 1)
 	signal.Notify(interrupt, os.Interrupt)

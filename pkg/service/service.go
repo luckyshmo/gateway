@@ -38,7 +38,7 @@ func (services *Service) Init() {
 	chValid := make(chan sensor.Sensor)
 	chInvalid := make(chan models.RawData)
 	go services.Reader.ReadData(chRaw)
-	go services.Process.SortData(chRaw, chValid, chInvalid) //? no need to create extrenal and interface method //todo middleware
+	go services.Process.SortData(chRaw, chValid, chInvalid) //todo middleware
 	go services.Writer.WriteData(chValid)
 	go services.Writer.WriteRawData(chInvalid)
 }

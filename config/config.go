@@ -39,7 +39,7 @@ func Get() *Config {
 		if err != nil {
 			logrus.Fatal(err)
 		}
-		tools.Validate(config)
+		tools.PrintEmptyStructFields(config)
 	})
 	return &config
 }

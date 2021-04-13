@@ -62,5 +62,5 @@ func (vPack *Sensor) FillPackage(rawData models.RawData) {
 	default:
 		vPack.PackageType = Over
 	}
-	tools.Validate(*vPack)
+	tools.PrintEmptyStructFields(*vPack)
 }

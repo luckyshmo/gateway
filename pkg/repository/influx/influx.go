@@ -8,19 +8,20 @@ import (
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
+	"github.com/luckyshmo/gateway/config"
 )
 
 type Influx struct {
 	writer api.WriteAPIBlocking
 }
 
-func NewInfluxWriter(address, token, org, bucket string) *Influx {
-	rand.Seed(42)
+func NewInfluxWriter(cfg *config.Config) (*Influx, error) {
+	//TODO how to know if any error?
 	// create new client with default option for server url authenticate by token
-	client := influxdb2.NewClient("http://localhost:8086", "sPdkEFcl8RuHVTD_HALyKWj0OWSkjhQdFb4pnzrYfSVrAunVW7JSzMr1mqkeyrXKt-BCG1VGabOMg6muiRVilg==")
+	client := influxdb2.NewClient(cfg.InfluxUrl, cfg.InfluxToken)
 	// user async write client for writes to desired bucket
-	writeAPI := client.WriteAPIBlocking("myorg", "mybucket")
-	return &Influx{writeAPI}
+	writeAPI := client.WriteAPIBlocking(cfg.InfluxOrg, cfg.InfluxBucket)
+	return &Influx{writeAPI}, nil
 }
 
 func (wr *Influx) WriteData() {

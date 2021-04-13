@@ -8,10 +8,12 @@ import (
 
 	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/pkg/repository"
+	"github.com/luckyshmo/gateway/pkg/repository/influx"
 	"github.com/luckyshmo/gateway/pkg/repository/pg"
 	"github.com/luckyshmo/gateway/pkg/service"
 	"github.com/luckyshmo/gateway/pkg/source"
 	"github.com/luckyshmo/gateway/pkg/source/socket"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -52,6 +54,12 @@ func run() error {
 		return err
 	}
 	defer pgDB.SqlDB.Close()
+
+	inf, err := influx.NewInfluxWriter(cfg)
+	if err != nil {
+		return errors.Wrap(err, "Error Init influx")
+	}
+	inf.WriteData()
 
 	//Source init
 	// path, err := filepath.Abs("../testData")

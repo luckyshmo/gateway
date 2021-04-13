@@ -18,6 +18,10 @@
                 "ENV" : "debug",
                 "APP_PORT" : "8080",
                 "SOCKET_HOST" : "89.109.190.198:8003",
+                "INFLUX_URL" : "http://localhost:8086",
+                "INFLUX_TOKEN" : "",
+                "INFLUX_ORG" : "myorg",
+                "INFLUX_BUCKET" : "mybucket"
             },
             "name": "Gateway",
             "type": "go",

@@ -25,17 +25,15 @@ var (
 func (pg *PG) WriteData(vp ...sensor.Sensor) error {
 	for i, v := range vp {
 		var id uuid.UUID
-		query := fmt.Sprintf(`INSERT INTO %s (id, time_cr, raw_data, app_eui, ack, data_f, dr, fcnt, freq, gateway_id, port, rssi, snr, time_stamp_, type_, dev_eui) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id`, validTable)
-
-		logrus.Info(query)
+		query := fmt.Sprintf(`INSERT INTO %s (id, p_type, time_cr, raw_data, app_eui, ack, data_f, dr, fcnt, freq, gateway_id, port, rssi, snr, time_stamp_, type_, dev_eui) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING id`, validTable)
 
 		row := pg.SqlDB.QueryRow(
 			query,
-			v.Id, v.TimeCreated, v.RawData,
+			v.Id, v.PackageType.String(), v.TimeCreated, v.RawData,
 			v.AppEui, v.Ack, v.Data, v.Dr, v.Fcnt, v.Freq, v.GatewayId, v.Port, v.Rssi, v.Snr, v.TimeStamp, v.Type, v.DevEui,
 		)
 		if err := row.Scan(&id); err != nil {
-			logrus.Warn("No resp from DB")
+			logrus.Warn("No resp from DB valid")
 		}
 
 		row.Err()
@@ -54,7 +52,7 @@ func (pg *PG) WriteRawData(rd ...models.RawData) error {
 
 		row := pg.SqlDB.QueryRow(query, r.Id, r.Time, r.Data)
 		if err := row.Scan(&id); err != nil {
-			logrus.Warn("No resp from DB")
+			logrus.Warn("No resp from DB raw")
 		}
 		row.Err()
 		if err := row.Err(); err != nil {

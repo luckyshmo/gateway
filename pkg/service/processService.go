@@ -22,10 +22,10 @@ func (ps *ProcessService) SortData(chRaw <-chan models.RawData, chValid chan<- s
 			var vPack sensor.Sensor
 			json.Unmarshal(rawData.Data, &vPack)
 
-			if vPack.DevEui != "" && len(vPack.Data) > 0 { //valid data
+			if /*vPack.DevEui != "" &&*/ len(vPack.Data) > 0 { //valid data
 				vPack.FillPackage(rawData)
-				// tools.Validate(vPack)
 				chValid <- vPack
+				continue
 			}
 
 			chInValid <- rawData

@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/luckyshmo/gateway/models"
+	"github.com/luckyshmo/gateway/tools"
 )
 
 type PackageType int
@@ -58,4 +59,5 @@ func (vPack *Sensor) FillPackage(rawData models.RawData) {
 	default:
 		vPack.PackageType = Over
 	}
+	tools.Validate(*vPack)
 }

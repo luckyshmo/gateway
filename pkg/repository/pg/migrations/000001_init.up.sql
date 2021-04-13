@@ -10,8 +10,10 @@ CREATE TABLE raw_data
 CREATE TABLE valid_data
 (
     id            uuid DEFAULT uuid_generate_v4 () not null unique,
+    p_type        varchar(255) not null,
     time_cr       timestamp not null,
     raw_data      bytea not null,
+    dev_eui       varchar(255),
     app_eui       varchar(255),
     ack           boolean,
     data_f        varchar(255),
@@ -23,6 +25,5 @@ CREATE TABLE valid_data
     rssi          numeric,
     snr           numeric, --double precision,
     time_stamp_   numeric,
-    type_         varchar(255),
-    dev_eui       varchar(255)
+    type_         varchar(255)
 );

@@ -3,17 +3,14 @@ package main
 import (
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 	"time"
 
 	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/pkg/repository"
-	"github.com/luckyshmo/gateway/pkg/repository/kafkaQueue"
 	"github.com/luckyshmo/gateway/pkg/repository/pg"
 	"github.com/luckyshmo/gateway/pkg/service"
 	"github.com/luckyshmo/gateway/pkg/source"
-	"github.com/luckyshmo/gateway/pkg/source/fileSource"
 	"github.com/luckyshmo/gateway/pkg/source/socket"
 	"github.com/sirupsen/logrus"
 )
@@ -43,7 +40,7 @@ func run() error {
 	}
 
 	//Storage init
-	_ = kafkaQueue.NewKafkaStore("", "") //example write to Kafka
+	// _ = kafkaQueue.NewKafkaStore("", "") //example write to Kafka
 	pgDB, err := pg.NewPostgresDB(cfg)
 	if err != nil {
 		return err
@@ -57,14 +54,14 @@ func run() error {
 	defer pgDB.SqlDB.Close()
 
 	//Source init
-	path, err := filepath.Abs("../testData")
-	if err != nil {
-		return err
-	}
-	_, err = fileSource.NewFileSource(path) //example. Read from file
-	if err != nil {
-		return err
-	}
+	// path, err := filepath.Abs("../testData")
+	// if err != nil {
+	// 	return err
+	// }
+	// _, err = fileSource.NewFileSource(path) //example. Read from file
+	// if err != nil {
+	// 	return err
+	// }
 
 	sock := socket.NewSocketSource(cfg)
 
@@ -76,8 +73,6 @@ func run() error {
 
 	//Run program
 	services.Init()
-
-	// go services.Writer.WriteData(chInvalid) //TODO
 
 	logrus.Print("App Started")
 

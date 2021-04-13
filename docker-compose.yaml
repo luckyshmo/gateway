@@ -2,6 +2,26 @@
 version: '3.1'
 
 services:
+  gateway:
+    build: ./
+    # command: ./wait-for-postgres.sh pg ./api-example
+    ports:
+      - 8080:8080
+    depends_on:
+      - pg
+    environment:
+      - DB_PASSWORD=example
+      - APP_PORT=8080
+      - PG_HOST=pg
+      - PG_PORT=5432
+      - LOG_LEVEL=debug
+      - PG_MIGRATIONS_PATH=file://./migrations
+      - PG_PAS=example
+      - PG_SSLMODE=disable
+      - PG_USERNAME=postgres
+      - PG_DBNAME=postgres
+      - ENV=production
+      - SOCKET_HOST=89.109.190.198:8003
   pg:
     image: postgres:latest
     restart: always
@@ -11,30 +31,30 @@ services:
       POSTGRES_PASSWORD: example
     ports:
       - 5432:5432
-  influxdb:
-    image: quay.io/influxdb/influxdb:v2.0.3
-    # volumes:
-    #   # Mount for influxdb data directory and configuration
-    #   - influxdbv2:/.influxdbv2
-    ports:
-      - "8086:8086"
-# Use the influx cli to set up an influxdb instance. 
-  influxdb_cli:
-    links:
-      - influxdb
-    image: quay.io/influxdb/influxdb:v2.0.3
-# Use these same configurations parameters in your telegraf configuration, mytelegraf.conf.
-    entrypoint: influx setup --bucket mybucket -t mytoken -o myorg --username=myusername --password=passwordpasswordpassword --host=http://influxdb:8086 -f
-      # Wait for the influxd service in the influxdb container has fully bootstrapped before trying to setup an influxdb instance with the influxdb_cli service. 
-    restart: on-failure:10
-    depends_on:
-      - influxdb
-  telegraf:
-    image: telegraf
-    links:
-      - influxdb
-    volumes:
-      # Mount for telegraf config
-      - ./telegraf/mytelegraf.conf:/etc/telegraf/telegraf.conf
-    depends_on:
-      - influxdb_cli  
+#   influxdb:
+#     image: quay.io/influxdb/influxdb:v2.0.3
+#     # volumes:
+#     #   # Mount for influxdb data directory and configuration
+#     #   - influxdbv2:/.influxdbv2
+#     ports:
+#       - "8086:8086"
+# # Use the influx cli to set up an influxdb instance. 
+#   influxdb_cli:
+#     links:
+#       - influxdb
+#     image: quay.io/influxdb/influxdb:v2.0.3
+# # Use these same configurations parameters in your telegraf configuration, mytelegraf.conf.
+#     entrypoint: influx setup --bucket mybucket -t mytoken -o myorg --username=myusername --password=passwordpasswordpassword --host=http://influxdb:8086 -f
+#       # Wait for the influxd service in the influxdb container has fully bootstrapped before trying to setup an influxdb instance with the influxdb_cli service. 
+#     restart: on-failure:10
+#     depends_on:
+#       - influxdb
+#   telegraf:
+#     image: telegraf
+#     links:
+#       - influxdb
+#     volumes:
+#       # Mount for telegraf config
+#       - ./telegraf/mytelegraf.conf:/etc/telegraf/telegraf.conf
+#     depends_on:
+#       - influxdb_cli  

@@ -11,7 +11,7 @@ type KafkaStore struct {
 	writer *kafka.Writer
 }
 
-func (ka *KafkaStore) WriteData(data ...sensor.PressureSensor) error {
+func (ka *KafkaStore) WriteData(data ...sensor.Sensor) error {
 	logrus.Info("write to kafka")
 	return nil
 	// for i := 0; i < len(data); i++ {

@@ -8,6 +8,7 @@ import (
 	_ "github.com/lib/pq" //driver
 	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/models"
+	"github.com/luckyshmo/gateway/models/sensor"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -21,7 +22,7 @@ var (
 	validTable = "valid_data"
 )
 
-func (pg *PG) WriteData(vp ...models.ValidPackage) error {
+func (pg *PG) WriteData(vp ...sensor.PressureSensor) error {
 	for i, v := range vp {
 		var id uuid.UUID
 		query := fmt.Sprintf(`INSERT INTO %s (id, time_cr, raw_data, app_eui, ack, data_f, dr, fcnt, freq, gateway_id, port, rssi, snr, time_stamp_, type_, dev_eui) values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id`, validTable)

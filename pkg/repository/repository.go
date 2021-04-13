@@ -1,9 +1,12 @@
 package repository
 
-import "github.com/luckyshmo/gateway/models"
+import (
+	"github.com/luckyshmo/gateway/models"
+	"github.com/luckyshmo/gateway/models/sensor"
+)
 
 type Storage interface {
-	WriteData(...models.ValidPackage) error
+	WriteData(...sensor.Sensor) error
 	WriteRawData(...models.RawData) error
 }
 

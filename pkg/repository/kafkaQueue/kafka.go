@@ -2,6 +2,7 @@ package kafkaQueue
 
 import (
 	"github.com/luckyshmo/gateway/models"
+	"github.com/luckyshmo/gateway/models/sensor"
 	"github.com/segmentio/kafka-go"
 	"github.com/sirupsen/logrus"
 )
@@ -10,7 +11,7 @@ type KafkaStore struct {
 	writer *kafka.Writer
 }
 
-func (ka *KafkaStore) WriteData(data ...models.ValidPackage) error {
+func (ka *KafkaStore) WriteData(data ...sensor.PressureSensor) error {
 	logrus.Info("write to kafka")
 	return nil
 	// for i := 0; i < len(data); i++ {

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/luckyshmo/gateway/models"
+	"github.com/luckyshmo/gateway/models/sensor"
 	"github.com/luckyshmo/gateway/pkg/repository"
 )
 
@@ -19,7 +20,7 @@ func NewStorageService(valid repository.Storage, invalid repository.Storage) *St
 	}
 }
 
-func (ss StorageService) WriteData(ch <-chan models.ValidPackage) error {
+func (ss StorageService) WriteData(ch <-chan sensor.Sensor) error {
 	for {
 		select {
 		case data := <-ch:

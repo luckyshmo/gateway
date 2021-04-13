@@ -2,12 +2,13 @@ package service
 
 import (
 	"github.com/luckyshmo/gateway/models"
+	"github.com/luckyshmo/gateway/models/sensor"
 	"github.com/luckyshmo/gateway/pkg/repository"
 	"github.com/luckyshmo/gateway/pkg/source"
 )
 
 type Writer interface {
-	WriteData(ch <-chan models.ValidPackage) error
+	WriteData(ch <-chan sensor.Sensor) error
 	WriteRawData(ch <-chan models.RawData) error
 }
 
@@ -16,7 +17,7 @@ type Reader interface {
 }
 
 type Process interface {
-	SortData(chRaw <-chan models.RawData, chValid chan<- models.ValidPackage, chInValid chan<- models.RawData) error
+	SortData(chRaw <-chan models.RawData, chValid chan<- sensor.Sensor, chInValid chan<- models.RawData) error
 }
 type Service struct {
 	Writer
@@ -34,7 +35,7 @@ func NewService(valid *repository.Repository, invalid *repository.Repository, da
 
 func (services *Service) Init() {
 	chRaw := make(chan models.RawData)
-	chValid := make(chan models.ValidPackage)
+	chValid := make(chan sensor.Sensor)
 	chInvalid := make(chan models.RawData)
 	go services.Reader.ReadData(chRaw)
 	go services.Process.SortData(chRaw, chValid, chInvalid) //? no need to create extrenal and interface method //todo middleware

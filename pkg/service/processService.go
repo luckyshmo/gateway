@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/luckyshmo/gateway/models"
+	"github.com/luckyshmo/gateway/models/sensor"
 )
 
 type ProcessService struct {
@@ -15,31 +15,15 @@ func NewProcessService() *ProcessService {
 	return &ProcessService{}
 }
 
-func fillPackage(vPack *models.ValidPackage, rawData models.RawData) {
-	vPack.Id = uuid.New()
-	vPack.TimeCreated = rawData.Time
-	vPack.RawData = rawData.Data
-
-	switch len(vPack.Data) {
-	case 102:
-		vPack.PackageType = models.First
-	case 82:
-		vPack.PackageType = models.Second
-	default:
-		vPack.PackageType = models.Over
-	}
-}
-
-func (ps *ProcessService) SortData(chRaw <-chan models.RawData, chValid chan<- models.ValidPackage, chInValid chan<- models.RawData) error {
+func (ps *ProcessService) SortData(chRaw <-chan models.RawData, chValid chan<- sensor.Sensor, chInValid chan<- models.RawData) error {
 	for {
 		select {
 		case rawData := <-chRaw:
-			var vPack models.ValidPackage
+			var vPack sensor.Sensor
 			json.Unmarshal(rawData.Data, &vPack)
 
 			if vPack.DevEui != "" && len(vPack.Data) > 0 { //valid data
-
-				fillPackage(&vPack, rawData)
+				vPack.FillPackage(rawData)
 				// tools.Validate(vPack)
 				chValid <- vPack
 			}

@@ -19,10 +19,10 @@ type Config struct {
 	PgUserName       string `envconfig:"PG_USERNAME"`
 	PgDBName         string `envconfig:"PG_DBNAME"`
 
-	InfluxUrl    string "INFLUX_URL"
-	InfluxToken  string "INFLUX_TOKEN"
-	InfluxOrg    string "INFLUX_ORG"
-	InfluxBucket string "INFLUX_BUCKET"
+	InfluxUrl    string `envconfig:"INFLUX_URL"`
+	InfluxToken  string `envconfig:"INFLUX_TOKEN"`
+	InfluxOrg    string `envconfig:"INFLUX_ORG"`
+	InfluxBucket string `envconfig:"INFLUX_BUCKET"`
 
 	SocketHost string `envconfig:"SOCKET_HOST"`
 

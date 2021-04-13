@@ -14,11 +14,12 @@ const (
 	FirstPressure PackageType = iota
 	SecondPressure
 	ConcreteTemp
+	HumiditySensor
 	Over
 )
 
 func (pt PackageType) String() string {
-	return [...]string{"FirstPressure", "SecondPressure", "ConcreteTemp", "Over"}[pt]
+	return [...]string{"FirstPressure", "SecondPressure", "ConcreteTemp", "HumiditySensor", "Over"}[pt]
 }
 
 type Sensor struct {
@@ -56,6 +57,8 @@ func (vPack *Sensor) FillPackage(rawData models.RawData) {
 		vPack.PackageType = SecondPressure
 	case 26:
 		vPack.PackageType = ConcreteTemp
+	case 32:
+		vPack.PackageType = HumiditySensor
 	default:
 		vPack.PackageType = Over
 	}

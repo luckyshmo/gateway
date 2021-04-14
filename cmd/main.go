@@ -17,6 +17,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+//TODO proper close socket and over connection while graceful shutdown
 func main() {
 	if err := run(); err != nil {
 		logrus.Fatal(err)
@@ -53,7 +54,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	defer pgDB.SqlDB.Close()
+	defer pgDB1.SqlDB.Close()
 
 	inf, err := influx.NewInfluxWriter(cfg)
 	if err != nil {

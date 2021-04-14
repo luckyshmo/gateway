@@ -50,7 +50,7 @@ func (vPack *Sensor) FillPackage(rawData models.RawData) {
 	vPack.TimeCreated = rawData.Time
 	vPack.RawData = rawData.Data
 
-	switch len(vPack.Data) {
+	switch len(vPack.Data) { //! should be declared by registry of sensors
 	case 102:
 		vPack.PackageType = FirstPressure
 	case 82:

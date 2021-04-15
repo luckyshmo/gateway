@@ -60,8 +60,6 @@ func run() error {
 	if err != nil {
 		return errors.Wrap(err, "Error Init influx")
 	}
-	inf.WriteData()
-
 	//Source init
 	// path, err := filepath.Abs("../testData")
 	// if err != nil {
@@ -75,7 +73,7 @@ func run() error {
 	sock := socket.NewSocketSource(cfg)
 
 	//Init interfaces
-	validRepo := repository.NewRepository(pgDB1)
+	validRepo := repository.NewRepository(inf)
 	invalidRepo := repository.NewRepository(pgDB)
 	dataSource := source.NewDataSource(sock)
 	services := service.NewService(validRepo, invalidRepo, dataSource)

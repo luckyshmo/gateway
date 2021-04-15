@@ -2,13 +2,13 @@ package influx
 
 import (
 	"context"
-	"fmt"
-	"math/rand"
-	"time"
 
 	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
 	"github.com/influxdata/influxdb-client-go/v2/api"
 	"github.com/luckyshmo/gateway/config"
+	"github.com/luckyshmo/gateway/models"
+	"github.com/luckyshmo/gateway/models/sensor"
+	"github.com/pkg/errors"
 )
 
 type Influx struct {
@@ -24,29 +24,27 @@ func NewInfluxWriter(cfg *config.Config) (*Influx, error) {
 	return &Influx{writeAPI}, nil
 }
 
-func (wr *Influx) WriteData() {
+func (wr *Influx) WriteRawData(rd ...models.RawData) error {
+	return nil
+}
 
-	for i := 0; i < 100; i++ {
+func (wr *Influx) WriteData(vp ...sensor.Sensor) error {
+	for _, v := range vp {
 		// create data point
 		p := influxdb2.NewPoint(
-			"system",
+			"socket",
 			map[string]string{
-				"id":       fmt.Sprintf("rack_%v", i%10),
-				"vendor":   "AWS",
-				"hostname": fmt.Sprintf("host_%v", i%100),
+				"id": v.DevEui,
 			},
 			map[string]interface{}{
-				"temperature": rand.Float64() * 80.0,
-				"disk_free":   rand.Float64() * 1000.0,
-				"disk_total":  (i/10 + 1) * 1000000,
-				"mem_total":   (i/100 + 1) * 10000000,
-				"mem_free":    rand.Uint64(),
+				"time_cr": v.TimeStamp,
 			},
-			time.Now())
+			v.TimeCreated)
 		// write synchronously
 		err := wr.writer.WritePoint(context.Background(), p)
 		if err != nil {
-			panic(err)
+			return errors.Wrap(err, "error writing point")
 		}
 	}
+	return nil
 }

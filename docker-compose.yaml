@@ -23,7 +23,7 @@ services:
       - ENV=production
       - SOCKET_HOST=89.109.190.198:8003
       - INFLUX_URL=http://localhost:8086",
-      - INFLUX_TOKEN="",
+      - INFLUX_TOKEN="mytoken",
       - INFLUX_ORG=myorg,
       - INFLUX_BUCKET=mybucket,
   pg:
@@ -35,30 +35,47 @@ services:
       POSTGRES_PASSWORD: example
     ports:
       - 5432:5432
-#   influxdb:
-#     image: quay.io/influxdb/influxdb:v2.0.3
-#     # volumes:
-#     #   # Mount for influxdb data directory and configuration
-#     #   - influxdbv2:/.influxdbv2
-#     ports:
-#       - "8086:8086"
-# # Use the influx cli to set up an influxdb instance. 
-#   influxdb_cli:
-#     links:
-#       - influxdb
-#     image: quay.io/influxdb/influxdb:v2.0.3
-# # Use these same configurations parameters in your telegraf configuration, mytelegraf.conf.
-#     entrypoint: influx setup --bucket mybucket -t mytoken -o myorg --username=myusername --password=passwordpasswordpassword --host=http://influxdb:8086 -f
-#       # Wait for the influxd service in the influxdb container has fully bootstrapped before trying to setup an influxdb instance with the influxdb_cli service. 
-#     restart: on-failure:10
-#     depends_on:
-#       - influxdb
-#   telegraf:
-#     image: telegraf
-#     links:
-#       - influxdb
-#     volumes:
-#       # Mount for telegraf config
-#       - ./telegraf/mytelegraf.conf:/etc/telegraf/telegraf.conf
-#     depends_on:
-#       - influxdb_cli  
+  influxdb:
+    image: influxdb:latest
+    volumes:
+      # Mount for influxdb data directory and configuration
+      - influxdbv2:/.influxdbv2
+    ports:
+      - "8086:8086"
+# Use the influx cli to set up an influxdb instance. 
+  influxdb_cli:
+    links:
+      - influxdb
+    image: influxdb:latest
+# Use these same configurations parameters in your telegraf configuration, mytelegraf.conf.
+    entrypoint: influx setup --bucket mybucket -t mytoken -o myorg --username=myusername --password=passwordpasswordpassword --host=http://influxdb:8086 -f
+      # Wait for the influxd service in the influxdb container has fully bootstrapped before trying to setup an influxdb instance with the influxdb_cli service. 
+    restart: on-failure:10
+    depends_on:
+      - influxdb
+  chronograf:
+    image: chronograf:latest
+    ports:
+      - '127.0.0.1:8888:8888'
+    volumes:
+      - chronograf-storage:/var/lib/chronograf
+    depends_on:
+      - influxdb
+    environment:
+      - INFLUXDB_URL=http://influxdb:8086
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - '3001:3000'
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./grafana-provisioning/:/etc/grafana/provisioning
+    depends_on:
+      - influxdb
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin #${GRAFANA_USERNAME}
+      - GF_SECURITY_ADMIN_PASSWORD=admin #${GRAFANA_PASSWORD}
+volumes:
+  influxdbv2:
+  chronograf-storage:
+  grafana-storage: 

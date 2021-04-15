@@ -40,6 +40,7 @@ func (ss *SocketSource) ReadData(ch chan<- models.RawData) error {
 		for {
 			_, message, err := ss.ReadMessage()
 			if err != nil {
+				logrus.Error(err)
 				return
 			}
 			ch <- models.RawData{

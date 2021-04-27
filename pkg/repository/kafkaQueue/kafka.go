@@ -38,12 +38,13 @@ func (ka *KafkaStore) WriteRawData(data ...models.RawData) error {
 	return nil
 }
 
-func NewKafkaStore(kafkaURL, topic string) *KafkaStore {
+func NewKafkaStore(kafkaURL, topic string) (*KafkaStore, error) {
 	return &KafkaStore{
-		writer: &kafka.Writer{
-			Addr:     kafka.TCP(kafkaURL),
-			Topic:    topic,
-			Balancer: &kafka.LeastBytes{},
+			writer: &kafka.Writer{
+				Addr:     kafka.TCP(kafkaURL),
+				Topic:    topic,
+				Balancer: &kafka.LeastBytes{},
+			},
 		},
-	}
+		nil //TODO ping kafka?
 }

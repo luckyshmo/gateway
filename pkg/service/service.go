@@ -16,20 +16,20 @@ type Reader interface {
 	ReadData(ch chan<- models.RawData) error
 }
 
-type Process interface {
+type ProcessData interface {
 	SortData(chRaw <-chan models.RawData, chValid chan<- sensor.Sensor, chInValid chan<- models.RawData) error
 }
 type Service struct {
 	Writer
 	Reader
-	Process
+	ProcessData
 }
 
 func NewService(valid *repository.Repository, invalid *repository.Repository, dataSource *source.DataSourceObj) *Service {
 	return &Service{
-		Writer:  NewStorageService(valid.Storage, invalid),
-		Reader:  NewDataSourceService(dataSource.DataSource),
-		Process: NewProcessService(),
+		Writer:      NewStorageService(valid.Storage, invalid),
+		Reader:      NewDataSourceService(dataSource.DataSource),
+		ProcessData: NewProcessService(),
 	}
 }
 
@@ -38,7 +38,7 @@ func (services *Service) Init() {
 	chValid := make(chan sensor.Sensor)
 	chInvalid := make(chan models.RawData)
 	go services.Reader.ReadData(chRaw)
-	go services.Process.SortData(chRaw, chValid, chInvalid) //todo middleware
+	go services.ProcessData.SortData(chRaw, chValid, chInvalid) //todo middleware
 	go services.Writer.WriteData(chValid)
 	go services.Writer.WriteRawData(chInvalid)
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/models"
 	"github.com/luckyshmo/gateway/models/sensor"
-	"github.com/pkg/errors"
+	"github.com/rotisserie/eris"
 )
 
 type Influx struct {
@@ -43,7 +43,7 @@ func (wr *Influx) WriteData(vp ...sensor.Sensor) error {
 		// write synchronously
 		err := wr.writer.WritePoint(context.Background(), p)
 		if err != nil {
-			return errors.Wrap(err, "error writing point")
+			return eris.Wrap(err, "error writing point")
 		}
 	}
 	return nil

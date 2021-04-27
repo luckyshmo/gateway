@@ -1,9 +1,8 @@
 package pg
 
 import (
-	"errors"
-
 	"github.com/luckyshmo/gateway/config"
+	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -20,7 +19,7 @@ func RunPgMigrations(cfg *config.Config) error { //? can be run from Makefile
 		return nil
 	}
 	if cfg.PgHOST == "" || cfg.PgPORT == "" {
-		return errors.New("no cfg.PgURL provided")
+		return eris.New("no cfg.PgURL provided")
 	}
 
 	connectionString := "postgres://" + cfg.PgUserName + ":" + cfg.PgPAS + "@" + cfg.PgHOST + "/" + cfg.PgDBName + "?sslmode=" + cfg.PgSSLMode

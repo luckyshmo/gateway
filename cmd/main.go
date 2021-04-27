@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -9,23 +10,30 @@ import (
 	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/pkg/repository"
 	"github.com/luckyshmo/gateway/pkg/repository/influx"
+	"github.com/luckyshmo/gateway/pkg/repository/kafkaQueue"
 	"github.com/luckyshmo/gateway/pkg/repository/pg"
 	"github.com/luckyshmo/gateway/pkg/service"
 	"github.com/luckyshmo/gateway/pkg/source"
 	"github.com/luckyshmo/gateway/pkg/source/socket"
-	"github.com/pkg/errors"
+	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
 )
 
 //TODO proper close socket and over connection while graceful shutdown
 func main() {
 	if err := run(); err != nil {
-		logrus.Fatal(err)
+		// format error for Prod
+		formattedJSON := eris.ToJSON(err, true)
+		logrus.Error(formattedJSON)
+
+		// format error for Debug
+		formattedStr := eris.ToString(err, true)
+		fmt.Println(formattedStr)
 	}
 }
 
 func run() error {
-	// config
+	// Config
 	cfg := config.Get()
 
 	// logger configuration
@@ -43,22 +51,25 @@ func run() error {
 	}
 
 	//Storage init
-	// _ = kafkaQueue.NewKafkaStore("", "") //example write to Kafka
+	_, err = kafkaQueue.NewKafkaStore("", "") //example write to Kafka
+	if err != nil {
+		return eris.Wrap(err, "Error Init kafka")
+	}
 	pgDB, err := pg.NewPostgresDB(cfg)
 	if err != nil {
-		return err
+		return eris.Wrap(err, "Error Init PG")
 	}
 	defer pgDB.SqlDB.Close()
 
-	pgDB1, err := pg.NewPostgresDB(cfg)
-	if err != nil {
-		return err
-	}
-	defer pgDB1.SqlDB.Close()
+	// pgDB1, err := pg.NewPostgresDB(cfg)
+	// if err != nil {
+	// 	return err
+	// }
+	// defer pgDB1.SqlDB.Close()
 
 	inf, err := influx.NewInfluxWriter(cfg)
 	if err != nil {
-		return errors.Wrap(err, "Error Init influx")
+		return eris.Wrap(err, "Error Init influx")
 	}
 	//Source init
 	// path, err := filepath.Abs("../testData")

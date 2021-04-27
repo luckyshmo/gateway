@@ -9,7 +9,7 @@ import (
 	"github.com/luckyshmo/gateway/config"
 	"github.com/luckyshmo/gateway/models"
 	"github.com/luckyshmo/gateway/models/sensor"
-	"github.com/pkg/errors"
+	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
 )
 
@@ -38,7 +38,7 @@ func (pg *PG) WriteData(vp ...sensor.Sensor) error {
 
 		row.Err()
 		if err := row.Err(); err != nil {
-			return errors.Wrap(err, fmt.Sprintf("error executing query number %d", i))
+			return eris.Wrap(err, fmt.Sprintf("error executing query number %d", i))
 		}
 	}
 
@@ -56,7 +56,7 @@ func (pg *PG) WriteRawData(rd ...models.RawData) error {
 		}
 		row.Err()
 		if err := row.Err(); err != nil {
-			return errors.Wrap(err, fmt.Sprintf("error executing query number %d", i))
+			return eris.Wrap(err, fmt.Sprintf("error executing query number %d", i))
 		}
 	}
 
@@ -68,16 +68,16 @@ func NewPostgresDB(cfg *config.Config) (*PG, error) {
 	db, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
 		cfg.PgHOST, cfg.PgPORT, cfg.PgUserName, cfg.PgDBName, cfg.PgPAS, cfg.PgSSLMode))
 	if err != nil {
-		return nil, errors.Wrap(err, "err open SQLx")
+		return nil, eris.Wrap(err, "err open SQLx")
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return nil, errors.Wrap(err, "no DB connections")
+		return nil, eris.Wrap(err, "no DB connections")
 	}
 
 	if err = RunPgMigrations(cfg); err != nil {
-		return nil, errors.Wrap(err, "migrations failed")
+		return nil, eris.Wrap(err, "migrations failed")
 	}
 
 	return &PG{

@@ -5,7 +5,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/luckyshmo/gateway/models/sensor"
-	"github.com/pkg/errors"
+	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,7 +21,7 @@ func get(db *sqlx.DB) ([]sensor.Sensor, error) {
 		err = rows.Scan(&v.Id, &packageType, &v.TimeCreated, &v.RawData,
 			&v.DevEui, &v.AppEui, &v.Ack, &v.Data, &v.Dr, &v.Fcnt, &v.Freq, &v.GatewayId, &v.Port, &v.Rssi, &v.Snr, &v.TimeStamp, &v.Type)
 		if err != nil {
-			return nil, errors.Wrap(err, "error scan")
+			return nil, eris.Wrap(err, "error scan")
 		}
 		switch packageType {
 		case "FirstPressure":
@@ -29,7 +29,7 @@ func get(db *sqlx.DB) ([]sensor.Sensor, error) {
 		case "SecondPressure":
 			v.PackageType = sensor.SecondPressure
 		default:
-			return nil, errors.New("wrong package type, aborting")
+			return nil, eris.New("wrong package type, aborting")
 		}
 		sensorArr = append(sensorArr, v)
 	}
@@ -132,7 +132,7 @@ func compose(data []sensor.Sensor) {
 func (pg *PG) Anal() error {
 	data, err := get(pg.SqlDB)
 	if err != nil {
-		return errors.Wrap(err, "error getting data from db")
+		return eris.Wrap(err, "error getting data from db")
 	}
 	someInfo(data)
 

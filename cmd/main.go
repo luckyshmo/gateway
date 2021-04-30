@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/luckyshmo/gateway/config"
+	process "github.com/luckyshmo/gateway/pkg/processors"
 	"github.com/luckyshmo/gateway/pkg/repository"
 	"github.com/luckyshmo/gateway/pkg/repository/influx"
 	"github.com/luckyshmo/gateway/pkg/repository/kafkaQueue"
@@ -81,13 +82,17 @@ func run() error {
 	// 	return err
 	// }
 
+	//Process Init
+	jsonProcessService := process.NewJsonProcessService()
+
 	sock := socket.NewSocketSource(cfg)
 
 	//Init interfaces
 	validRepo := repository.NewRepository(inf)
 	invalidRepo := repository.NewRepository(pgDB)
 	dataSource := source.NewDataSource(sock)
-	services := service.NewService(validRepo, invalidRepo, dataSource)
+	ps := process.NewProcessService(jsonProcessService)
+	services := service.NewService(validRepo, invalidRepo, dataSource, ps)
 
 	//Run program
 	services.Init()

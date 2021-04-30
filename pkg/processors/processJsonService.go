@@ -1,4 +1,4 @@
-package service
+package process
 
 import (
 	"encoding/json"
@@ -8,14 +8,14 @@ import (
 	"github.com/luckyshmo/gateway/models/sensor"
 )
 
-type ProcessService struct {
+type JsonProcessService struct {
 }
 
-func NewProcessService() *ProcessService {
-	return &ProcessService{}
+func NewJsonProcessService() *JsonProcessService {
+	return &JsonProcessService{}
 }
 
-func (ps *ProcessService) SortData(chRaw <-chan models.RawData, chValid chan<- sensor.Sensor, chInValid chan<- models.RawData) error {
+func (ps *JsonProcessService) SortData(chRaw <-chan models.RawData, chValid chan<- sensor.Sensor, chInValid chan<- models.RawData) error {
 	for {
 		select {
 		case rawData := <-chRaw:

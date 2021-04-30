@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/luckyshmo/gateway/models"
 	"github.com/luckyshmo/gateway/models/sensor"
+	process "github.com/luckyshmo/gateway/pkg/processors"
 	"github.com/luckyshmo/gateway/pkg/repository"
 	"github.com/luckyshmo/gateway/pkg/source"
 )
@@ -19,17 +20,23 @@ type Reader interface {
 type ProcessData interface {
 	SortData(chRaw <-chan models.RawData, chValid chan<- sensor.Sensor, chInValid chan<- models.RawData) error
 }
+
 type Service struct {
 	Writer
 	Reader
 	ProcessData
 }
 
-func NewService(valid *repository.Repository, invalid *repository.Repository, dataSource *source.DataSourceObj) *Service {
+func NewService(
+	valid *repository.Repository,
+	invalid *repository.Repository,
+	dataSource *source.DataSourceObj,
+	pService *process.ProcessService,
+) *Service {
 	return &Service{
 		Writer:      NewStorageService(valid.Storage, invalid),
 		Reader:      NewDataSourceService(dataSource.DataSource),
-		ProcessData: NewProcessService(),
+		ProcessData: *pService,
 	}
 }
 

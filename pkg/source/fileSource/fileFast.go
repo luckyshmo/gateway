@@ -44,33 +44,62 @@ func process(f *os.File) error {
 	var wg sync.WaitGroup
 
 	for {
-		buf := linesPool.Get().([]byte)
+		kek := linesPool.Get()
+		buf, ok := kek.([]byte)
+		if ok {
+			n, err := r.Read(buf)
+			buf = buf[:n]
 
-		n, err := r.Read(buf)
-		buf = buf[:n]
-
-		if n == 0 {
-			if err != nil {
-				fmt.Println(err)
-				break
+			if n == 0 {
+				if err != nil {
+					fmt.Println(err)
+					break
+				}
+				if err == io.EOF {
+					break
+				}
+				return err
 			}
-			if err == io.EOF {
-				break
+
+			nextUntillNewline, err := r.ReadBytes('\n')
+
+			if err != io.EOF {
+				buf = append(buf, nextUntillNewline...)
 			}
-			return err
+
+			wg.Add(1)
+			go func() {
+				processChunk(buf, &linesPool, &stringPool)
+				wg.Done()
+			}()
+		} else {
+			buf1 := *kek.(*[]byte)
+			n, err := r.Read(buf1)
+			buf1 = buf1[:n]
+
+			if n == 0 {
+				if err != nil {
+					fmt.Println(err)
+					break
+				}
+				if err == io.EOF {
+					break
+				}
+				return err
+			}
+
+			nextUntillNewline, err := r.ReadBytes('\n')
+
+			if err != io.EOF {
+				buf1 = append(buf1, nextUntillNewline...)
+			}
+
+			wg.Add(1)
+			go func() {
+				processChunk(buf1, &linesPool, &stringPool)
+				wg.Done()
+			}()
 		}
-
-		nextUntillNewline, err := r.ReadBytes('\n')
-
-		if err != io.EOF {
-			buf = append(buf, nextUntillNewline...)
-		}
-
-		wg.Add(1)
-		go func() {
-			processChunk(buf, &linesPool, &stringPool)
-			wg.Done()
-		}()
 
 	}
 

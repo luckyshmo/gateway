@@ -9,12 +9,12 @@ import (
 
 	"github.com/luckyshmo/gateway/config"
 	process "github.com/luckyshmo/gateway/pkg/processors"
-	"github.com/luckyshmo/gateway/pkg/repository"
 	"github.com/luckyshmo/gateway/pkg/repository/influx"
 	"github.com/luckyshmo/gateway/pkg/repository/kafkaQueue"
 	"github.com/luckyshmo/gateway/pkg/repository/pg"
 	"github.com/luckyshmo/gateway/pkg/service"
 	"github.com/luckyshmo/gateway/pkg/source"
+	"github.com/luckyshmo/gateway/pkg/source/fileSource"
 	"github.com/luckyshmo/gateway/pkg/source/socket"
 	"github.com/rotisserie/eris"
 	"github.com/sirupsen/logrus"
@@ -36,7 +36,7 @@ func main() {
 func run() error {
 	// Config
 	cfg := config.Get()
-
+	fileSource.ReadFile("../catalina")
 	// logger configuration
 	lvl, err := logrus.ParseLevel(cfg.LogLevel)
 	if err != nil {
@@ -86,13 +86,9 @@ func run() error {
 	jsonProcessService := process.NewJsonProcessService()
 
 	sock := socket.NewSocketSource(cfg)
-
-	//Init interfaces
-	validRepo := repository.NewRepository(inf)
-	invalidRepo := repository.NewRepository(pgDB)
 	dataSource := source.NewDataSource(sock)
 	ps := process.NewProcessService(jsonProcessService)
-	services := service.NewService(validRepo, invalidRepo, dataSource, ps)
+	services := service.NewService(inf, pgDB, dataSource, ps)
 
 	//Run program
 	services.Init()

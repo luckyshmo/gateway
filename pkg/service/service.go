@@ -28,13 +28,13 @@ type Service struct {
 }
 
 func NewService(
-	valid *repository.Repository,
-	invalid *repository.Repository,
+	valid repository.Storage,
+	invalid repository.Storage,
 	dataSource *source.DataSourceObj,
 	pService *process.ProcessService,
 ) *Service {
 	return &Service{
-		Writer:      NewStorageService(valid.Storage, invalid),
+		Writer:      NewStorageService(valid, invalid),
 		Reader:      NewDataSourceService(dataSource.DataSource),
 		ProcessData: *pService,
 	}

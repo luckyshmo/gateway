@@ -1,3 +1,4 @@
 *.scala
 cmd/cmd
 cmd/__debug_bin
+catalina

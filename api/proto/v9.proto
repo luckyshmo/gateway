@@ -10,6 +10,8 @@
 syntax = "proto3";
 package SlpProtocol;
 
+option go_package = "proto/v9";
+
 // Версия протокола
 enum SlpProtocolVersion{v9_5_1 = 0;}
 

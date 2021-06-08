@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/golang-migrate/migrate/v4 v4.14.1
-	github.com/google/go-cmp v0.5.4 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.2.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/influxdata/influxdb-client-go/v2 v2.2.3
@@ -20,6 +20,7 @@ require (
 	golang.org/x/net v0.0.0-20210331212208-0fccb6fa2b5c // indirect
 	golang.org/x/sys v0.0.0-20210331175145-43e1dd70ce54 // indirect
 	golang.org/x/text v0.3.6 // indirect
+	google.golang.org/protobuf v1.26.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect

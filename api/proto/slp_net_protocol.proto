@@ -27,6 +27,8 @@
 syntax = "proto3";
 package SlpProtocol;
 
+option go_package = "proto/slpNetProtocol";
+
 // Версия протокола.
 enum SlpProtocolVersion { v11_1_5 = 0; }
 
